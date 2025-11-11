@@ -55,19 +55,32 @@ struct whisper_context *init_whisper_context(const std::string &model_path_in,
 		gf);
 
 	struct whisper_context_params cparams = whisper_context_default_params();
-#ifdef LOCALVOCAL_WITH_CUDA
-	cparams.use_gpu = true;
-	cparams.gpu_device = 0;
-	obs_log(LOG_INFO, "Using CUDA GPU for inference, device %d", cparams.gpu_device);
-#elif defined(LOCALVOCAL_WITH_CLBLAST)
-	cparams.use_gpu = true;
-	cparams.gpu_device = 0;
-	obs_log(LOG_INFO, "Using OpenCL for inference");
-#else
-	cparams.use_gpu = false;
-	obs_log(LOG_INFO, "Using CPU for inference");
-#endif
-	cparams.flash_attn = false;
+
+	if (gf->gpu_device < 0) {
+		cparams.use_gpu = false;
+		obs_log(LOG_INFO, "Using CPU for inference");
+	} else {
+		try {
+			if (gf->gpu_device >= (int)gf->gpu_devices.size()) {
+				obs_log(LOG_WARNING,
+					"Invalid GPU device selected: %d. Using CPU for inference",
+					cparams.gpu_device);
+				cparams.use_gpu = false;
+			} else {
+				cparams.use_gpu = true;
+				cparams.gpu_device = gf->gpu_device;
+				obs_log(LOG_INFO, "Using GPU device %d (%s) for inference",
+					cparams.gpu_device,
+					gf->gpu_devices.at(cparams.gpu_device).device_name);
+			}
+		} catch (const std::exception &e) {
+			obs_log(LOG_WARNING,
+				"Error retrieving selected GPU device. Using CPU for inference. Error: %s",
+				e.what());
+			cparams.use_gpu = false;
+		}
+	}
+	cparams.flash_attn = gf->enable_flash_attn;
 
 	struct whisper_context *ctx = nullptr;
 	try {
@@ -226,14 +239,14 @@ long long process_audio_from_buffer(struct cleanstream_data *gf)
 
 		// copy gf->frames from the end of the input buffer to the copy_buffers
 		for (size_t c = 0; c < gf->channels; c++) {
-			circlebuf_peek_back(&gf->input_buffers[c], gf->copy_buffers[c],
-					    gf->frames * sizeof(float));
+			deque_peek_back(&gf->input_buffers[c], gf->copy_buffers[c],
+					gf->frames * sizeof(float));
 		}
 
 		// peek at the info_buffer to get the timestamp of the last info
 		struct cleanstream_audio_info info_from_buf = {0};
-		circlebuf_peek_back(&gf->info_buffer, &info_from_buf,
-				    sizeof(struct cleanstream_audio_info));
+		deque_peek_back(&gf->info_buffer, &info_from_buf,
+				sizeof(struct cleanstream_audio_info));
 		end_timestamp = info_from_buf.timestamp;
 		start_timestamp =
 			end_timestamp - (int)(gf->frames * 1000 / gf->sample_rate) * 1000000;
