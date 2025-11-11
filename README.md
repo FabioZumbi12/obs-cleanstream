@@ -1,6 +1,4 @@
-# ⚠️ Stalled ⚠️ This project is not under active developmet
-
-## Cleanstream - Live Speech Filter using AI
+# Cleanstream - Live Speech Filter using AI
 
 CleanStream is an OBS plugin that cleans live audio streams from unwanted words and utterances using real-time local AI.
 
