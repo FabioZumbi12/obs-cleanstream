@@ -43,9 +43,10 @@ Here is an illustration of the process:
 ![alt text](docs/image.png)
 
 ## Requirements
-- OBS version 30+ for plugin versions 0.0.4+
-- OBS version 29 for plugin versions 0.0.2+
-- OBS version 28 for plugin versions 0.0.1
+- OBS version 32+ use plugin versions 0.2.0+
+- OBS version 30+ use plugin versions 0.0.4+
+- OBS version 29 use plugin versions 0.0.2+
+- OBS version 28 use plugin versions 0.0.1
 
 We do not support older versions of OBS since the plugin is using newer APIs.
 
