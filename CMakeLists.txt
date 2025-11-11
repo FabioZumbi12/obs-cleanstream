@@ -39,8 +39,10 @@ if(ENABLE_QT)
                AUTORCC ON)
 endif()
 
-include(cmake/FindLibAv.cmake)
-find_libav()
+if(APPLE OR WIN32)
+  include(cmake/FindLibAv.cmake)
+  find_libav()
+endif()
 
 set(USE_SYSTEM_CURL
     OFF
