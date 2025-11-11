@@ -51,7 +51,7 @@ invoke_formatter() {
 
       local -a source_files=(src/**/*.(c|cpp|h|hpp|m|mm)(.N))
 
-      local -a format_args=(-style=file -fallback-style=none)
+      local -a format_args=(-style=file -fallback-style=none --dry-run --Werror)
       if (( _loglevel > 2 )) format_args+=(--verbose)
       ;;
     cmake)
