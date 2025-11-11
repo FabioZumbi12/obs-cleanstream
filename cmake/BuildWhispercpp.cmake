@@ -346,9 +346,9 @@ else()
     set(WHISPER_LIB_DIR ${whispercpp_fetch_SOURCE_DIR})
 
     file(GLOB WHISPER_SOS ${whispercpp_fetch_SOURCE_DIR}/lib/*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${WHISPER_SOS} DESTINATION "${CMAKE_INSTALL_LIBDIR}/obs-plugins/obs-localvocal")
+    install(FILES ${WHISPER_SOS} DESTINATION "${CMAKE_INSTALL_LIBDIR}/obs-plugins/${CMAKE_PROJECT_NAME}")
     file(GLOB WHISPER_BIN_SOS ${whispercpp_fetch_SOURCE_DIR}/bin/*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${WHISPER_BIN_SOS} DESTINATION "${CMAKE_INSTALL_LIBDIR}/obs-plugins/obs-localvocal")
+    install(FILES ${WHISPER_BIN_SOS} DESTINATION "${CMAKE_INSTALL_LIBDIR}/obs-plugins/${CMAKE_PROJECT_NAME}")
   else()
     # Source build
     if(${CMAKE_BUILD_TYPE} STREQUAL Release OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDebInfo)
