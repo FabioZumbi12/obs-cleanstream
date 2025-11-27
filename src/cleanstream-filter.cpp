@@ -323,6 +323,50 @@ void cleanstream_update(void *data, obs_data_t *s)
 	gf->log_words = obs_data_get_bool(s, "log_words");
 	gf->delay_ms = BUFFER_SIZE_MSEC + INITIAL_DELAY_MSEC;
 	gf->current_result = DetectionResult::DETECTION_RESULT_UNKNOWN;
+
+#if defined(_WIN32) || defined(__APPLE__)
+	// Load external sound file if configured
+	if (gf->replace_sound == REPLACE_SOUNDS_EXTERNAL) {
+		std::string replace_sound_path_ =
+			obs_data_get_string(s, "replace_sound_path");
+		if (!replace_sound_path_.empty() &&
+		    gf->audioFileCache.find(replace_sound_path_) ==
+			    gf->audioFileCache.end()) {
+			AudioDataFloat audioFile =
+				read_audio_file(replace_sound_path_.c_str(), gf->sample_rate);
+			if (!audioFile.empty()) {
+				gf->audioFileCache[replace_sound_path_] = audioFile;
+				gf->replace_sound_external = replace_sound_path_;
+			}
+		}
+	}
+
+	// Load random sound files if folder is configured
+	if (gf->replace_sound == REPLACE_SOUNDS_RANDOM) {
+		std::string random_folder_path =
+			obs_data_get_string(s, "replace_sound_random_folder");
+		if (!random_folder_path.empty()) {
+			gf->replace_sound_random_folder = random_folder_path;
+			gf->random_audio_files.clear();
+			for (const auto &entry :
+			     std::filesystem::directory_iterator(random_folder_path)) {
+				if (entry.path().extension() == ".wav") {
+					std::string file_path = entry.path().string();
+					gf->random_audio_files.push_back(file_path);
+					if (gf->audioFileCache.find(file_path) ==
+					    gf->audioFileCache.end()) {
+						AudioDataFloat audioFile = read_audio_file(
+							file_path.c_str(), gf->sample_rate);
+						if (!audioFile.empty()) {
+							gf->audioFileCache[file_path] = audioFile;
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
+
 	gf->current_result_start_timestamp = 0;
 	gf->current_result_end_timestamp = 0;
 
